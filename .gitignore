@@ -7,5 +7,5 @@ build/
 core/files/
 .DS_Store
 core/.DS_Store
-
-
+local.properties
+files/
