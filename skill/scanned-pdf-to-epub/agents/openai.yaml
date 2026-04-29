@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scanned PDF to EPUB"
+  short_description: "OCR scanned PDFs into faithful EPUBs"
+  default_prompt: "Use $scanned-pdf-to-epub to convert this scanned PDF into a content-faithful EPUB."

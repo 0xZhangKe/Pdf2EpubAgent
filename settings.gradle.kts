@@ -19,7 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "PdfToEpubAgent"
+rootProject.name = "PdfToEpubSkill"
 
-include(":framework")
-include(":core")
+include(":pdf-processor")
