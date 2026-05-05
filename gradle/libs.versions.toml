@@ -5,6 +5,7 @@ kotlinx-serialization = "1.9.0"
 koin = "4.1.1"
 ktor = "3.3.0"
 pdfbox = "3.0.7"
+koog = "0.8.0"
 
 [libraries]
 kotlin-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
@@ -15,6 +16,8 @@ ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negoti
 ktor-client-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 pdfbox = { module = "org.apache.pdfbox:pdfbox", version.ref = "pdfbox" }
+koog-agents = { module = "ai.koog:koog-agents", version.ref = "koog" }
+koog-openai-client = { module = "ai.koog:prompt-executor-openai-client", version.ref = "koog" }
 
 # Dependencies of the included build-logic
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }

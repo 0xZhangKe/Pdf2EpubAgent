@@ -10,6 +10,8 @@ kotlin {
                 implementation(libs.koin.core)
                 implementation(libs.kotlin.coroutines.core)
                 implementation(libs.kotlinx.serialization.json)
+                api(libs.koog.agents)
+                api(libs.koog.openai.client)
             }
         }
         desktopMain {

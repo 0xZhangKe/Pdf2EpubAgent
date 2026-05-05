@@ -1,8 +1,16 @@
 package com.zhangke.agent.pdf2epub.core
 
-import org.koin.core.module.dsl.singleOf
+import com.zhangke.agent.pdf2epub.core.llm.LlmClient
+import com.zhangke.agent.pdf2epub.core.llm.prompt.pdfAgentPrompt
 import org.koin.dsl.module
 
 val coreKoinModule = module {
-    singleOf(::PdfToEpubService)
+    single {
+        PdfAgent(
+            llmClient = get(),
+        )
+    }
+    factory {
+        LlmClient(systemPrompt = pdfAgentPrompt)
+    }
 }
