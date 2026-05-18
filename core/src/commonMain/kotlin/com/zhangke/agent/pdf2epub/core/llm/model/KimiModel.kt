@@ -15,6 +15,7 @@ import ai.koog.prompt.llm.LLMCapability
 import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.params.LLMParams
+import com.zhangke.agent.pdf2epub.core.llm.getEnvironmentVariable
 import com.zhangke.agent.pdf2epub.core.llm.tool.AppendTextFileTool
 import com.zhangke.agent.pdf2epub.core.llm.tool.BuildEpubTool
 import com.zhangke.agent.pdf2epub.core.llm.tool.PdfToImagesTool
@@ -27,11 +28,11 @@ import kotlinx.serialization.json.jsonObject
 
 fun buildKimiAgent(
     systemPrompt: String,
-    apiKey: String,
     toolsEnabled: Boolean = true,
     additionalTools: List<Tool<*, *>> = emptyList(),
     maxIterations: Int = 10,
 ): GraphAIAgent<String, String> {
+    val apiKey: String = getEnvironmentVariable("KIMI_API_KEY").orEmpty()
     val baseUrl = "https://api.moonshot.ai"
     val client = KimiOpenAILLMClient(
         apiKey = apiKey,

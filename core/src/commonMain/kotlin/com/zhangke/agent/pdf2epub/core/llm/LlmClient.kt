@@ -2,34 +2,22 @@ package com.zhangke.agent.pdf2epub.core.llm
 
 import ai.koog.agents.core.agent.GraphAIAgent
 import ai.koog.agents.core.environment.GenericAgentEnvironment
+import ai.koog.agents.core.tools.Tool
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.message.Message
 import ai.koog.prompt.params.LLMParams
 import ai.koog.prompt.streaming.StreamFrame
 import ai.koog.prompt.streaming.toMessageResponses
-import com.zhangke.agent.pdf2epub.core.llm.model.buildKimiAgent
-import com.zhangke.agent.pdf2epub.core.llm.prompt.pdfOcrPrompt
-import com.zhangke.agent.pdf2epub.core.llm.tool.PdfOcrTool
+import com.zhangke.agent.pdf2epub.core.llm.model.buildOpenAIAgent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.io.files.Path
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 
 class LlmClient(
     private val systemPrompt: String,
-    private val apiKey: String = getEnvironmentVariable("KIMI_API_KEY").orEmpty(),
-    private val toolsEnabled: Boolean = true,
+    private val additionalTools: List<Tool<*, *>> = emptyList(),
 ) {
-
-    private val pdfOcrClient: LlmClient by lazy {
-        LlmClient(
-            systemPrompt = pdfOcrPrompt,
-            apiKey = apiKey,
-            toolsEnabled = false,
-        )
-    }
 
     suspend fun send(
         text: String,
@@ -100,6 +88,7 @@ class LlmClient(
                     model = config.model,
                     tools = toolDescriptors,
                 ).collect { frame ->
+                    println("frame: $frame")
                     frames += frame
                     onFrame(frame)
                 }
@@ -136,16 +125,9 @@ class LlmClient(
     }
 
     private fun buildAiAgent(): GraphAIAgent<String, String> {
-        return buildKimiAgent(
+        return buildOpenAIAgent(
             systemPrompt = systemPrompt,
-            apiKey = apiKey,
-            toolsEnabled = toolsEnabled,
-            maxIterations = if (toolsEnabled) 80 else 3,
-            additionalTools = if (toolsEnabled) {
-                listOf(PdfOcrTool(pdfOcrClient))
-            } else {
-                emptyList()
-            },
+            additionalTools = additionalTools,
         )
     }
 
@@ -159,10 +141,10 @@ class LlmClient(
         val text = trim()
         if (text.isBlank()) return false
         return text.contains(".epub") ||
-            text.contains("output/book.epub") ||
-            text.contains("停止原因") ||
-            text.contains("必须停止") ||
-            text.contains("无法继续")
+                text.contains("output/book.epub") ||
+                text.contains("停止原因") ||
+                text.contains("必须停止") ||
+                text.contains("无法继续")
     }
 
     private fun buildContinuationPrompt(previousMessage: String): String {
@@ -173,7 +155,7 @@ class LlmClient(
             $previousMessage
 
             请不要结束任务。继续从当前进度执行后续步骤：
-            1. 如果 page_analysis 还未完成，继续调用 pdf_ocr，并用 write_text_file 落盘每页 JSON。
+            1. 如果 page_analysis 还未完成，继续按 pdf_to_images 返回的页面图片列表顺序逐页调用 pdf_ocr；每完成一页 pdf_ocr 后，必须立即调用 write_text_file 将该页 JSON 写入页面图片文件夹下的 output/page-XXXX.json。
             2. 如果 page_analysis 已完成，继续 continuous_reconstruction。
             3. 然后继续 book_reconstruction、epub_content_generation。
             4. 最终必须调用 build_epub(input_dir="work/epub", output="output/book.epub")。
@@ -183,12 +165,13 @@ class LlmClient(
     }
 
     private fun LLMParams.withKimiThinkingDisabled(): LLMParams {
-        return copy(
-            additionalProperties = buildMap {
-                additionalProperties?.let { putAll(it) }
-                put("thinking", JsonObject(mapOf("type" to JsonPrimitive("disabled"))))
-            },
-        )
+        return this
+//        return copy(
+//            additionalProperties = buildMap {
+//                additionalProperties?.let { putAll(it) }
+//                put("thinking", JsonObject(mapOf("type" to JsonPrimitive("disabled"))))
+//            },
+//        )
     }
 
     private companion object {

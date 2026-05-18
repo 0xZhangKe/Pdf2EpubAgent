@@ -4,7 +4,7 @@ import ai.koog.agents.core.tools.SimpleTool
 import ai.koog.agents.core.tools.ToolException
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.serialization.typeToken
-import com.zhangke.agent.pdf2epub.core.llm.LlmClient
+import com.zhangke.agent.pdf2epub.core.PdfOcrAgent
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -12,7 +12,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
 class PdfOcrTool(
-    private val llmClient: LlmClient,
+    private val pdfOcrAgent: PdfOcrAgent,
 ) : SimpleTool<PdfOcrTool.Args>(
     argsType = typeToken<Args>(),
     name = "pdf_ocr",
@@ -32,9 +32,9 @@ class PdfOcrTool(
     override suspend fun execute(args: Args): String {
         return try {
             validate(args)
-            val response = llmClient.send(
-                text = buildOcrPrompt(args),
-                imagePaths = listOf(args.image_path),
+            val response = pdfOcrAgent.analyzePage(
+                prompt = buildOcrPrompt(args),
+                imagePath = args.image_path,
             )
             normalizeJson(response)
         } catch (e: IllegalArgumentException) {
